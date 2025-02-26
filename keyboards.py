@@ -1,14 +1,15 @@
 from aiogram.types import ReplyKeyboardRemove, ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
 
-AdminPanel = InlineKeyboardMarkup(
-    inline_keyboard=[
+AdminPanel = ReplyKeyboardMarkup(
+    keyboard=[
         [
-            InlineKeyboardButton(text='Запись', callback_data='booking'),
-            InlineKeyboardButton(text='Добавить клиента', callback_data='add_user')
+            KeyboardButton(text='Запись', callback_data='booking'),
+            KeyboardButton(text='Добавить клиента')
         ],
         [
-            InlineKeyboardButton(text='Добавить (редактировать) услугу', callback_data='add_service'),
-            InlineKeyboardButton(text='Статистика', callback_data='statistic')
+            KeyboardButton(text='Добавить (редактировать) услугу'),
+            KeyboardButton(text='Статистика', callback_data='statistic'),
+            KeyboardButton(text='Получить ID', callback_data='get_ID')
         ],
-    ]
+    ], resize_keyboard=True
 )

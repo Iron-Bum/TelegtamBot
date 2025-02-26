@@ -11,6 +11,7 @@ sys.path.append(os.path.join(os.getcwd(), '..'))
 class Users(StatesGroup):
     user = State()
     phone = State()
+    user_id = State()
     service = State()
     date_app = State()
     time_app = State()
@@ -21,10 +22,9 @@ async def start(message):
         await message.answer('Вы открыли панель администратора', parse_mode="HTML", reply_markup=AdminPanel)
 
 
-async def add_user(call):
-    await call.message.answer('Введите имя клиента')
+async def add_user(message):
+    await message.answer('Введите имя клиента')
     await Users.user.set()
-    await call.answer()
 
 
 async def add_user_phone(message, state):
@@ -35,6 +35,7 @@ async def add_user_phone(message, state):
     else:
         await message.answer(text='Клиент с таким именем уже существует , введите другое имя')
         await Users.user.set()
+
 
 async def send_user(message, state):
     await state.update_data(phone=message.text)
@@ -47,3 +48,20 @@ async def send_user(message, state):
         await message.answer(f'Клиент с номером телефона <b>{user_phone}</b> уже существует в базе!', parse_mode='HTML')
         await state.finish()
 
+
+async def get_ID_step_1(message):
+    await message.answer('Введите имя или номер телефона клиента')
+    await Users.user_id.set()
+
+
+async def get_ID_step_2(message, state):
+    if str(message.text).isdigit():
+        client_id = _data_.get_id(int(message.text))
+    else:
+        client_id = _data_.get_id(message.text)
+    if client_id and 'values' in client_id:
+        await message.answer(f"ID клиента : {client_id['values']}")
+        await state.finish()
+    else:
+        await message.answer("Клиент не найден или ошибка при получении данных")
+        await state.finish()

@@ -92,9 +92,31 @@ class Database:
             print('Имя клиента изменено')
             return {"message": "Имя клиента изменено", "success": True}
         except Exception as e:
-            print(f'Ошибка при изменении клиента :{e}')
-            return {"message": f"Ошибка при изменении клиента: {e}", "success": False}
+            print(f'Ошибка при изменении имени :{e}')
+            return {"message": f"Ошибка при изменении имени: {e}", "success": False}
 
+    def get_id(self, name_or_phone):
+        try:
+            if isinstance(name_or_phone, str):
+                cur = self.conn.cursor()
+                cur.execute(f'SELECT id FROM clients WHERE LOWER(name) = ?', (name_or_phone.lower(),))
+                client_id = cur.fetchone()
+                if client_id:
+                    print(f'ID клиента : {client_id[0]}')
+                    return {"values": client_id[0], "mesage": "Получен ID по имени", "success": True}
+                else:
+                    return {"mesage": "Клиент не найден", "success": False}
+            else:
+                cur = self.conn.cursor()
+                cur.execute(f'SELECT id FROM clients WHERE phone = ?', (name_or_phone,))
+                client_id = cur.fetchone()
+                if client_id:
+                    print(f'ID клиента : {client_id[0]}')
+                    return {"values": client_id[0], "mesage": "Получен ID по номеру телефона", "success": True}
+                else:
+                    return {"mesage": "Клиент не найден", "success": False}
+        except Exception as e:
+            return {"mesage": f"Ошибка получения ID: {e}", "success": False}
 
     def add_service(self, service_name, service_price):
         try:
