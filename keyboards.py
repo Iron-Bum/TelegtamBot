@@ -13,3 +13,13 @@ AdminPanel = ReplyKeyboardMarkup(
         ],
     ], resize_keyboard=True
 )
+Choice = InlineKeyboardMarkup(
+    inline_keyboard=[
+        [
+            InlineKeyboardButton(text='Нет', callback_data='choice_nou')
+        ],
+        [
+            InlineKeyboardButton(text='Да', callback_data='choice_yes')
+        ]
+    ]
+)

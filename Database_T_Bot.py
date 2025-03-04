@@ -71,6 +71,18 @@ class Database:
         except Exception as e:
             return {"message": f"Ошибка : {e}", "success": False}
 
+    def check_service(self, service):
+        try:
+            cur = self.conn.cursor()
+            cur.execute('SELECT name FROM services;')
+            list_name_service = cur.fetchall()
+            print(list_name_service)
+            if (service,) in list_name_service:
+                return {"message": f"Услуга {service} уже существует.", "success": False}
+            return {"message": "Название услуги свободно", "success": True}
+        except Exception as e:
+            return {"message": f"Ошибка : {e}", "success": False}
+
     def add_client(self, name, phone):
         try:
             if self.check_phone(phone)['success']:
@@ -95,6 +107,29 @@ class Database:
             print(f'Ошибка при изменении имени :{e}')
             return {"message": f"Ошибка при изменении имени: {e}", "success": False}
 
+    def add_service(self, name, price):
+        try:
+            if self.check_service(name)['success']:
+                cur = self.conn.cursor()
+                cur.execute('INSERT INTO services(name, price) VALUES (?, ?)', (name, price))
+                self.conn.commit()
+                print('Услуга добавлена')
+                return {"message": "Услуга добавлена", "success": True}
+            return {"message": f"Услуга {name} уже существует!", "success": False}
+        except Exception as e:
+            return {"message": f"Ошибка при добавлении услуги: {e}", "success": False}
+
+    def update_service(self, name, price):
+        try:
+            cur = self.conn.cursor()
+            cur.execute('UPDATE services SET name = ? WHERE price = ?', (name, price))
+            self.conn.commit()
+            print('Название услуги изменено')
+            return {"message": f"Название услуги изменено на {name}", "success": True}
+        except Exception as e:
+            print(f'Ошибка при изменении услуги :{e}')
+            return {"message": f"Ошибка при изменении : {e}", "success": False}
+
     def get_id(self, name_or_phone):
         try:
             if isinstance(name_or_phone, str):
@@ -118,22 +153,22 @@ class Database:
         except Exception as e:
             return {"mesage": f"Ошибка получения ID: {e}", "success": False}
 
-    def add_service(self, service_name, service_price):
-        try:
-            cur = self.conn.cursor()
-            cur.execute('SELECT name FROM services;')
-            list_service_name = cur.fetchall()
-            print(list_service_name)
-            if (service_name,) in list_service_name:
-                cur.execute('UPDATE services SET price = ? WHERE name = ?', (service_price, service_name))
-                self.conn.commit()
-                print('Услуга обновлена')
-            else:
-                cur.execute('INSERT INTO services(name, price) VALUES (?, ?)', (service_name, service_price))
-                self.conn.commit()
-                print('Услуга добавлена')
-        except Exception as e:
-            print(f'Услуга не добавлена, ошибка :{e}')
+    # def add_service(self, service_name, service_price):
+    #     try:
+    #         cur = self.conn.cursor()
+    #         cur.execute('SELECT name FROM services;')
+    #         list_service_name = cur.fetchall()
+    #         print(list_service_name)
+    #         if (service_name,) in list_service_name:
+    #             cur.execute('UPDATE services SET price = ? WHERE name = ?', (service_price, service_name))
+    #             self.conn.commit()
+    #             print('Услуга обновлена')
+    #         else:
+    #             cur.execute('INSERT INTO services(name, price) VALUES (?, ?)', (service_name, service_price))
+    #             self.conn.commit()
+    #             print('Услуга добавлена')
+    #     except Exception as e:
+    #         print(f'Услуга не добавлена, ошибка :{e}')
 
     def add_booking(self, client_id, service_id, date):
         try:
