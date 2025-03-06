@@ -10,16 +10,12 @@ AdminPanel = ReplyKeyboardMarkup(
             KeyboardButton(text='Добавить (редактировать) услугу'),
             KeyboardButton(text='Статистика', callback_data='statistic'),
             KeyboardButton(text='Получить ID', callback_data='get_ID')
-        ],
-    ], resize_keyboard=True
+        ]], resize_keyboard=True
 )
 Choice = InlineKeyboardMarkup(
     inline_keyboard=[
         [
-            InlineKeyboardButton(text='Нет', callback_data='choice_nou')
-        ],
-        [
+            InlineKeyboardButton(text='Нет', callback_data='choice_nou'),
             InlineKeyboardButton(text='Да', callback_data='choice_yes')
-        ]
-    ]
+        ]], resize_keyboard=True
 )

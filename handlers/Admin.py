@@ -1,10 +1,12 @@
 from aiogram.dispatcher.filters.state import State, StatesGroup
+from aiogram.dispatcher import FSMContext
 from aiogram import types
 import config
 from keyboards import *
 import sys
 import os
 from Database_T_Bot import _data_
+
 sys.path.append(os.path.join(os.getcwd(), '..'))
 
 
@@ -60,8 +62,8 @@ async def add_service(message: types.Message):
 
 
 async def add_service_price(message: types.Message, state):
+    await state.update_data(service=message.text)
     if _data_.check_service(message.text)["success"]:
-        await state.update_data(service=message.text)
         await message.answer(text='Введите цену услуги')
         await Users.price.set()
     else:
@@ -70,19 +72,28 @@ async def add_service_price(message: types.Message, state):
         )
 
 
+async def hendl_choice(call: types.CallbackQuery, state: FSMContext):
+    print(f"Получен callback_data: {call.data}")
+    if call.data == 'choice_yes':
+        await call.message.answer('Введите новую цену услуги')
+        await Users.price.set()
+    elif call.data == 'choice_nou':
+        await call.message.answer('Операция отменена.')
+        await state.finish()
+    await call.answer()
+
+
 async def send_service(message: types.Message, state):
     await state.update_data(price=message.text)
     data = await state.get_data()
     service_name, price = data['service'], int(data['price'])
     if _data_.check_service(service_name)["success"]:
         _data_.add_service(service_name, price)
-        print(_data_.add_service(service_name, price)["message"])
         await message.answer('Услуга добавлена')
-        await state.finish()
     else:
         _data_.update_service(service_name, price)
         await message.answer('Цена изменена')
-        await state.finish()
+    await state.finish()
 
 
 async def get_ID_step_1(message: types.Message):
