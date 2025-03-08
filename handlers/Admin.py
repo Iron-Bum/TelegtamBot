@@ -73,7 +73,6 @@ async def add_service_price(message: types.Message, state):
 
 
 async def hendl_choice(call: types.CallbackQuery, state: FSMContext):
-    print(f"Получен callback_data: {call.data}")
     if call.data == 'choice_yes':
         await call.message.answer('Введите новую цену услуги')
         await Users.price.set()
@@ -87,11 +86,12 @@ async def send_service(message: types.Message, state):
     await state.update_data(price=message.text)
     data = await state.get_data()
     service_name, price = data['service'], int(data['price'])
+    print(service_name, price)
     if _data_.check_service(service_name)["success"]:
         _data_.add_service(service_name, price)
         await message.answer('Услуга добавлена')
     else:
-        _data_.update_service(service_name, price)
+        _data_.upd_price(service_name, price)
         await message.answer('Цена изменена')
     await state.finish()
 

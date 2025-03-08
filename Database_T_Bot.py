@@ -119,16 +119,16 @@ class Database:
         except Exception as e:
             return {"message": f"Ошибка при добавлении услуги: {e}", "success": False}
 
-    def update_service(self, name, price):
+    def upd_price(self, name, price):
         try:
             cur = self.conn.cursor()
-            cur.execute('UPDATE services SET name = ? WHERE price = ?', (name, price))
+            cur.execute('UPDATE services SET price = ? WHERE name = ?', (price, name))
             self.conn.commit()
-            print('Название услуги изменено')
-            return {"message": f"Название услуги изменено на {name}", "success": True}
+            print('Цена изменена')
+            return {"message": f"Цена {name} изменена", "success": True}
         except Exception as e:
-            print(f'Ошибка при изменении услуги :{e}')
-            return {"message": f"Ошибка при изменении : {e}", "success": False}
+            print(f'Ошибка при изменении цены :{e}')
+            return {"message": f"Ошибка при изменении цены : {e}", "success": False}
 
     def get_id(self, name_or_phone):
         try:

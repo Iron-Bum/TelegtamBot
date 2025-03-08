@@ -17,7 +17,7 @@ bot = Bot(token=api)
 dp = Dispatcher(bot, storage=MemoryStorage())
 
 dp.message_handler(commands=['admin'])(handlers.Admin.start)
-dp.callback_query_handler(text=['choice_yes', 'choice_nou'])(handlers.Admin.hendl_choice)
+dp.callback_query_handler(text=['choice_yes', 'choice_nou'], state=handlers.Admin.Users.service)(handlers.Admin.hendl_choice)
 dp.message_handler(Text(equals=['Добавить клиента']))(handlers.Admin.add_user)
 dp.message_handler(Text(equals=['Добавить (редактировать) услугу']))(handlers.Admin.add_service)
 dp.message_handler(Text(equals=['Получить ID']))(handlers.Admin.get_ID_step_1)
