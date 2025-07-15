@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from typing import List
 
 
 class Service:
@@ -7,12 +8,19 @@ class Service:
         self.duration = duration
         self.cost = cost
 
+    def __repr__(self):
+        return self.name
+
 
 class Master:
-    def __init__(self, name: str, specialties: list):
+    def __init__(self, master_id: int, name: str, specialties: List[str]):
+        self.master_id = master_id
         self.name = name
         self.specialties = specialties
         self.schedule = {}
+
+    def __repr__(self):
+        return self.name
 
     def get_month_free_hours_dict(self, start=10, end=21, slot=90, year=None, month=None):
         now = datetime.now()
@@ -56,6 +64,9 @@ class Client:
         self.name = name
         self.phone = phone
         self.appointments = []
+
+    def __repr__(self):
+        return self.name
 
     def add_appointment(self, appointment):
         self.appointments.append(appointment)
@@ -126,5 +137,3 @@ class Salon:
         client.add_appointment(appointment)
         master.book_time(appointment_time)
         return appointment
-
-

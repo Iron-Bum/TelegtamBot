@@ -4,7 +4,8 @@ AdminPanel = ReplyKeyboardMarkup(
     keyboard=[
         [
             KeyboardButton(text='Запись', callback_data='booking'),
-            KeyboardButton(text='Добавить клиента')
+            KeyboardButton(text='Добавить клиента'),
+            KeyboardButton(text='Добавить мастера')
         ],
         [
             KeyboardButton(text='Добавить (редактировать) услугу'),

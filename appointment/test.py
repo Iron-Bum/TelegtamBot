@@ -1,4 +1,4 @@
-from appointment import Service, Master, Appointment, Salon, Client
+from appointment.appointment import Service, Master, Appointment, Salon, Client
 from datetime import datetime
 
 alla = Client('Алла', '+79265550077')
