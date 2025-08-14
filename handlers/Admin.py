@@ -82,7 +82,7 @@ async def add_service(message: types.Message):
     await Service.name.set()
 
 
-async def add_service_price(message: types.Message, state):
+async def add_service_price(message: types.Message, state: FSMContext):
     await state.update_data(service=message.text)
     if db.check_service(message.text)["success"]:
         await message.answer(text='Введите цену услуги')
@@ -123,13 +123,14 @@ async def get_client_id_step_1(message: types.Message):
 
 
 async def get_client_id_step_2(message: types.Message, state: FSMContext):
-    if str(message.text).isdigit():
-        client_id = db.get_client_id(int(message.text))
-    else:
-        client_id = db.get_client_id(message.text)
+    client_id = db.get_client_id(message.text)
     if 'values' in client_id:
         await message.answer(f"ID клиента : {client_id['values']}")
         await state.finish()
     else:
         await message.answer(f"{client_id['message']}")
         await state.finish()
+
+
+async def create_service(message: types.Message):
+    await message.answer()

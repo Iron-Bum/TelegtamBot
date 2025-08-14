@@ -1,12 +1,12 @@
 from datetime import datetime, timedelta
-from typing import List
+from typing import List, Dict, Any, Optional
 
 
 class Service:
-    def __init__(self, name: str, cost: str, duration: str = '1'):
-        self.name = name
-        self.duration = duration
-        self.cost = cost
+    def __init__(self, name: str, cost: int, duration: int = 1):
+        self.name: str = name
+        self.duration: int = duration
+        self.cost: int = cost
 
     def __repr__(self):
         return self.name
@@ -14,15 +14,15 @@ class Service:
 
 class Master:
     def __init__(self, master_id: int, name: str, specialties: List[str]):
-        self.master_id = master_id
-        self.name = name
-        self.specialties = specialties
-        self.schedule = {}
+        self.master_id: int = master_id
+        self.name: str = name
+        self.specialties: List[str] = specialties
+        self.schedule: Dict[Any, Any] = {}
 
     def __repr__(self):
         return self.name
 
-    def get_month_free_hours_dict(self, start=10, end=21, slot=90, year=None, month=None):
+    def get_month_free_hours_dict(self, start=10, end=21, slot=90, year=None, month=None) -> None:
         now = datetime.now()
         year = year or now.year
         month = month or now.month
@@ -45,15 +45,15 @@ class Master:
                 slot_time += timedelta(minutes=slot)
             day += timedelta(days=1)
 
-    def is_available(self, appointment_time: datetime):
+    def is_available(self, appointment_time: datetime) -> bool:
         dt_form = appointment_time.strftime("%Y-%m-%d %H:%M")
         return self.schedule.get(dt_form, False)
 
-    def book_time(self, appointment_time: datetime):
+    def book_time(self, appointment_time: datetime) -> None:
         dt_form = appointment_time.strftime("%Y-%m-%d %H:%M")
         self.schedule[dt_form] = False
 
-    def cancel_time(self, appointment_time: datetime):
+    def cancel_time(self, appointment_time: datetime) -> None:
         dt_form = appointment_time.strftime("%Y-%m-%d %H:%M")
         if dt_form in self.schedule:
             self.schedule[dt_form] = True
@@ -61,17 +61,17 @@ class Master:
 
 class Client:
     def __init__(self, name: str, phone: str):
-        self.name = name
-        self.phone = phone
-        self.appointments = []
+        self.name: str = name
+        self.phone: str = phone
+        self.appointments: List[Appointment] = []
 
     def __repr__(self):
         return self.name
 
-    def add_appointment(self, appointment):
+    def add_appointment(self, appointment: 'Appointment') -> None:
         self.appointments.append(appointment)
 
-    def view_appointments(self):
+    def get_appointments(self) -> List['Appointment']:
         return self.appointments
 
 
@@ -84,12 +84,12 @@ class Appointment:
             service: Service,
             description: str = ''
     ):
-        self.appointment_time = appointment_time
-        self.master = master
-        self.client = client
-        self.service = service
-        self.description = description
-        self.confirmed = False
+        self.appointment_time: datetime = appointment_time
+        self.master: Master = master
+        self.client: Client = client
+        self.service: Service = service
+        self.description: str = description
+        self.confirmed: bool = False
 
     def confirm(self):
         self.confirmed = True
@@ -100,12 +100,20 @@ class Appointment:
 
 class Salon:
     def __init__(self, name: str):
-        self.name = name
-        self.clients = []
-        self.masters = []
-        self.appointments = []
+        self.name: str = name
+        self.clients: List[Client] = []
+        self.masters: List[Master] = []
+        self.appointments: List[Appointment] = []
+        self.services: List[Service] = []
 
-    def add_master(self, master: Master):
+    HAIRDRESER = 'Парикмахер'
+
+    def create_master(self, master_id: int, master_name: str, specialties: List[str]) -> Master:
+        master = Master(master_id, master_name, specialties)
+        self.add_master(master)
+        return master
+
+    def add_master(self, master: Master) -> None:
         self.masters.append(master)
 
     def find_master(self, time: datetime, specialty: Service, master: Master = None):
@@ -118,7 +126,7 @@ class Salon:
                 return m
         return None
 
-    def add_client(self, client: Client):
+    def add_client(self, client: Client) -> None:
         self.clients.append(client)
 
     def book_appointment(

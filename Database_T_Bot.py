@@ -1,18 +1,18 @@
 import sqlite3 as sq
-from appointment.appointment import Master, Appointment, Service, Client
-from typing import List
+from appointment.appointment import Master, Appointment, Service, Client, Salon
+from typing import List, Optional
 
-TIME_BLOCK = [
-    '9:00:00', '10:30:00', '12:00:00', '13:30:00', '15:00:00', '16:30:00', '18:00:00', '19:30:00', '21:00:00'
-]
+
+Hom = Salon('На дому')
+# Hom.sync_up()
 
 
 class Database:
-    def __init__(self, db_name):
-        self.conn = None
-        self.db_name = db_name
+    def __init__(self, db_name: str):
+        self.conn: Optional[sq.Connection] = None
+        self.db_name: str = db_name
 
-    def connect(self):
+    def connect(self) -> None:
         try:
             self.conn = sq.connect(self.db_name)
             print('Соединение установленно')
@@ -25,7 +25,7 @@ class Database:
         CREATE TABLE IF NOT EXISTS clients(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT,
-        phone INT
+        phone TEXT
         ); 
         ''')
         cur.execute('''
@@ -39,6 +39,7 @@ class Database:
         CREATE TABLE IF NOT EXISTS services(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT,
+        duration INT,
         price INTEGER NOT NULL DEFAULT '0.00'
         ); 
         ''')
@@ -54,7 +55,6 @@ class Database:
         free BOOL NOT NULL DEFAULT TRUE 
         );
         ''')
-        print('Таблицы созданны или уже существуют')
         self.conn.commit()
 
     def close_connection(self):
@@ -62,7 +62,7 @@ class Database:
             self.conn.close()
             print("Соединение закрыто")
 
-    def check_name(self, name) -> dict:
+    def check_name(self, name: str) -> dict:
         try:
             cur = self.conn.cursor()
             cur.execute('SELECT name FROM clients;')
@@ -73,7 +73,7 @@ class Database:
         except Exception as e:
             return {"message": f"Ошибка : {e}", "success": False}
 
-    def check_phone(self, phone) -> dict:
+    def check_phone(self, phone: str) -> dict:
         try:
             cur = self.conn.cursor()
             cur.execute('SELECT phone FROM clients;')
@@ -84,19 +84,19 @@ class Database:
         except Exception as e:
             return {"message": f"Ошибка : {e}", "success": False}
 
-    def check_service(self, service) -> dict:
+    def check_service(self, service_name: str) -> dict:
         try:
             cur = self.conn.cursor()
             cur.execute('SELECT name FROM services;')
             list_name_service = cur.fetchall()
             print(list_name_service)
-            if (service,) in list_name_service:
-                return {"message": f"Услуга {service} уже существует.", "success": False}
+            if (service_name,) in list_name_service:
+                return {"message": f"Услуга {service_name} уже существует.", "success": False}
             return {"message": "Название услуги свободно", "success": True}
         except Exception as e:
             return {"message": f"Ошибка : {e}", "success": False}
 
-    def add_master(self, name, specialties='Парикмахер') -> dict:
+    def add_master(self, name: str, specialties: str = 'Парикмахер') -> dict:
         try:
             cur = self.conn.cursor()
             cur.execute('INSERT INTO masters(name, specialties) VALUES (?, ?)', (name, specialties))
@@ -107,7 +107,7 @@ class Database:
             print(f'Ошибка при добавлении клиента :{e}')
             return {"message": f"Ошибка при добавлении мастера: {e}", "success": False}
 
-    def add_client(self, name, phone) -> dict:
+    def add_client(self, name: str, phone: str) -> dict:
         try:
             if self.check_phone(phone)['success']:
                 cur = self.conn.cursor()
@@ -120,7 +120,7 @@ class Database:
             print(f'Ошибка при добавлении клиента :{e}')
             return {"message": f"Ошибка при добавлении клиента: {e}", "success": False}
 
-    def update_client(self, name, phone) -> dict:
+    def update_client(self, name: str, phone: str) -> dict:
         try:
             cur = self.conn.cursor()
             cur.execute('UPDATE clients SET name = ? WHERE phone = ?', (name, phone))
@@ -154,10 +154,10 @@ class Database:
             print(f'Ошибка при изменении цены :{e}')
             return {"message": f"Ошибка при изменении цены : {e}", "success": False}
 
-    def get_client_id(self, name_or_phone) -> dict:
+    def get_client_id(self, name_or_phone: str) -> dict:
         try:
             cur = self.conn.cursor()
-            if isinstance(name_or_phone, str):
+            if not name_or_phone.isdigit():
                 cur.execute('SELECT id FROM clients WHERE name = ?', (name_or_phone,))
                 client_id = cur.fetchone()
                 if client_id:
@@ -181,7 +181,7 @@ class Database:
         except Exception as e:
             return {"mesage": f"Ошибка получения ID: {e}", "success": False}
 
-    def add_booking(self, client_id, service_id, date):
+    def add_booking(self, client_id: int, service_id: int, date: str) -> None:
         try:
             cur = self.conn.cursor()
             cur.execute('SELECT _date_ FROM bookings;')
@@ -239,6 +239,17 @@ class Database:
             return {"message": f"Мастера {master_name} нет в базе, попробуйте другое имя. "}
         except Exception as e:
             return {"message": f"Ошибка при создании расписания: {e}", "success": False}
+
+    def create_service(self, name: str, cost: int, duration: int = 1) -> Service:
+        cur = self.conn.cursor()
+        cur.execute(
+            'INSERT INTO services(name, cost, duration) VALUES (?, ?, ?)',
+            (name, cost, duration)
+        )
+        self.conn.commit()
+        service = Service(name, cost, duration)
+        Hom.services.append(service)
+        return service
 
 
 
