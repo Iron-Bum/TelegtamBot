@@ -113,16 +113,20 @@ async def hendl_choice(call: types.CallbackQuery, state: FSMContext):
 
 
 async def send_service(message: types.Message, state: FSMContext):
-    await state.update_data(price=message.text)
-    data = await state.get_data()
-    service_name, price = data['service'], int(data['price'])
-    if db.check_service(service_name)["success"]:
-        db.add_service(service_name, price)
-        await message.answer('Услуга добавлена')
-    else:
-        db.upd_price(service_name, price)
-        await message.answer('Цена изменена')
-    await state.finish()
+    try:
+        await state.update_data(price=message.text)
+        data = await state.get_data()
+        service_name, price = data['service'], int(data['price'])
+        if db.check_service(service_name)["success"]:
+            db.add_service(service_name, price)
+            await message.answer('Услуга добавлена')
+        else:
+            db.upd_price(service_name, price)
+            await message.answer('Цена изменена')
+        await state.finish()
+    except ValueError:
+        await state.finish()
+        await message.answer(text=f'Ошибка, попробуйте заново', reply_markup=AdminPanel)
 
 
 async def get_client_id_step_1(message: types.Message):
@@ -185,11 +189,10 @@ async def day_navigation_handler(message: types.Message, state: FSMContext):
     try:
         user_data = await state.get_data()
         day = user_data.get('chosen_date')
-
         # Обработка выбора времени в формат datatime
         chosen_datatime_str = f"{day.strftime('%Y-%m-%d')} {message.text}"
         chosen_datatime = datetime.strptime(chosen_datatime_str, "%Y-%m-%d %H:%M")
-        await message.answer(f'Выбрали: {message.text}, состояние: {chosen_datatime}')
+        await message.answer(f'Запись на {chosen_datatime} зарезервирована', reply_markup=AdminPanel)
         db.add_booking(1, 2, chosen_datatime_str)
         await state.finish()
     except ValueError:

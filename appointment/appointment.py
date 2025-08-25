@@ -4,12 +4,16 @@ from typing import List, Dict, Any, Optional
 
 class Service:
     def __init__(self, name: str, cost: int, duration: int = 1):
+        self.service_id: Optional[int] = None
         self.name: str = name
         self.duration: int = duration
         self.cost: int = cost
 
     def __repr__(self):
-        return self.name
+        return f"Service(id={self.service_id}, name={self.name}, cost={self.cost}, duration={self.duration})"
+
+    def set_id(self, service_id: int):
+        self.service_id = service_id
 
 
 class Master:

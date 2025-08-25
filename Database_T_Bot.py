@@ -105,10 +105,8 @@ class Database:
                 (master.name, master.specialties)
             )
             self.conn.commit()
-            print('Мастер добавлен')
             return {"message": "Мастер добавлен", "success": True}
         except Exception as e:
-            print(f'Ошибка при добавлении клиента :{e}')
             return {"message": f"Ошибка при добавлении мастера: {e}", "success": False}
 
     def get_masters(self) -> Optional[List[Master]]:
@@ -131,11 +129,9 @@ class Database:
                 cur = self.conn.cursor()
                 cur.execute('INSERT INTO clients(name, phone) VALUES (?, ?)', (name, phone))
                 self.conn.commit()
-                print('Клиент добавлен')
                 return {"message": "Клиент добавлен", "success": True}
             return {"message": f"Клиент с номером {phone} уже существует!", "success": False}
         except Exception as e:
-            print(f'Ошибка при добавлении клиента :{e}')
             return {"message": f"Ошибка при добавлении клиента: {e}", "success": False}
 
     def update_client(self, name: str, phone: str) -> dict:
@@ -167,10 +163,8 @@ class Database:
             cur = self.conn.cursor()
             cur.execute('UPDATE services SET price = ? WHERE name = ?', (price, name))
             self.conn.commit()
-            print('Цена изменена')
             return {"message": f"Цена {name} изменена", "success": True}
         except Exception as e:
-            print(f'Ошибка при изменении цены :{e}')
             return {"message": f"Ошибка при изменении цены : {e}", "success": False}
 
     def get_client_id(self, name_or_phone: str) -> dict:
@@ -180,7 +174,6 @@ class Database:
                 cur.execute('SELECT id FROM clients WHERE name = ?', (name_or_phone,))
                 client_id = cur.fetchone()
                 if client_id:
-                    print(f'ID клиента : {client_id[0]}')
                     return {
                         "values": client_id[0],
                         "message": "Получен ID по имени",
@@ -190,7 +183,6 @@ class Database:
                 cur.execute('SELECT id FROM clients WHERE phone = ?', (name_or_phone,))
                 client_id = cur.fetchone()
                 if client_id:
-                    print(f'ID клиента : {client_id[0]}')
                     return {
                         "values": client_id[0],
                         "message": f"Получен ID по номеру телефона",
@@ -212,6 +204,7 @@ class Database:
             if list_booking:
                 return {"message": "Запись на это время уже существует.", "success": False}
             else:
+                print(client_id, service_id, date)
                 cur.execute(
                     '''
                     UPDATE bookings
