@@ -1,6 +1,7 @@
 import sqlite3 as sq
 from appointment.appointment import Master, Appointment, Service, Client, Salon
 from typing import List, Optional
+from datetime import datetime
 
 
 Hom = Salon('На дому')
@@ -96,16 +97,33 @@ class Database:
         except Exception as e:
             return {"message": f"Ошибка : {e}", "success": False}
 
-    def add_master(self, name: str, specialties: str = 'Парикмахер') -> dict:
+    def add_master(self, master: Master) -> dict:
         try:
             cur = self.conn.cursor()
-            cur.execute('INSERT INTO masters(name, specialties) VALUES (?, ?)', (name, specialties))
+            cur.execute(
+                'INSERT INTO masters(name, specialties) VALUES (?, ?)',
+                (master.name, master.specialties)
+            )
             self.conn.commit()
             print('Мастер добавлен')
             return {"message": "Мастер добавлен", "success": True}
         except Exception as e:
             print(f'Ошибка при добавлении клиента :{e}')
             return {"message": f"Ошибка при добавлении мастера: {e}", "success": False}
+
+    def get_masters(self) -> Optional[List[Master]]:
+        masters = []
+        cur = self.conn.cursor()
+        cur.execute('SELECT id, name, specialties FROM masters;')
+        list_masters = cur.fetchall()
+        if list_masters:
+            for row in list_masters:
+                # val = list(row)
+                master = Master(row[1], row[2])
+                master.set_id(row[0])
+                masters.append(master)
+            return masters
+        return None
 
     def add_client(self, name: str, phone: str) -> dict:
         try:
@@ -137,7 +155,8 @@ class Database:
                 cur = self.conn.cursor()
                 cur.execute('INSERT INTO services(name, price) VALUES (?, ?)', (name, price))
                 self.conn.commit()
-                print('Услуга добавлена')
+                services = Service(name, price)
+                Hom.services.append(services)
                 return {"message": "Услуга добавлена", "success": True}
             return {"message": f"Услуга {name} уже существует!", "success": False}
         except Exception as e:
@@ -181,33 +200,30 @@ class Database:
         except Exception as e:
             return {"mesage": f"Ошибка получения ID: {e}", "success": False}
 
-    def add_booking(self, client_id: int, service_id: int, date: str) -> None:
+    def add_booking(self, client_id: int, service_id: int, date: str) -> dict:
         try:
             cur = self.conn.cursor()
-            cur.execute('SELECT _date_ FROM bookings;')
+            cur.execute('''
+                SELECT _date_ FROM bookings 
+                WHERE _date_ = ? AND free = 0;
+                ''', (date,)
+            )
             list_booking = cur.fetchall()
-            if (date,) in list_booking:
-                print('Запись на это время ужу существует')
+            if list_booking:
+                return {"message": "Запись на это время уже существует.", "success": False}
             else:
                 cur.execute(
-                    'INSERT INTO bookings(client_id, service_id, _date_) VALUES (?, ?, ?)',
-                    (client_id, service_id, date)
+                    '''
+                    UPDATE bookings
+                    SET client_id = ?, service_id = ?, free = ?
+                    WHERE _date_ = ?
+                    ''',
+                    (client_id, service_id, False, date)
                 )
                 self.conn.commit()
-                print('Запись добавлена')
+                return {"message": "Запись добавленна.", "success": True}
         except Exception as e:
-            print(f'Запись не добавленна, ошибка :{e}')
-
-    def get_masters(self) -> List[Master]:
-        masters = []
-        cur = self.conn.cursor()
-        cur.execute('SELECT id, name, specialties FROM masters;')
-        list_masters = cur.fetchall()
-        if list_masters:
-            for master in list_masters:
-                val = list(master)
-                masters.append(Master(val[0], val[1], val[2]))
-            return masters
+            return {"message": f"Запись не добавлена, ошибка: {e}", "success": False}
 
     def get_clients(self) -> List[Client]:
         clients = []
@@ -225,9 +241,7 @@ class Database:
             master = next((m for m in self.get_masters() if m.name == master_name), None)
             if master:
                 master.get_month_free_hours_dict()
-                print(master.schedule)
                 for key, free in master.schedule.items():
-                    print(master.master_id, key, free)
                     cur = self.conn.cursor()
                     cur.execute(
                         'INSERT INTO bookings(master_id, _date_, free) VALUES (?, ?, ?)',
@@ -251,14 +265,34 @@ class Database:
         Hom.services.append(service)
         return service
 
+    def get_list_free_time(self, date: datetime) -> List[datetime]:
+        cur = self.conn.cursor()
+        date_str = date.strftime('%Y-%m-%d')
+        cur.execute(
+            "SELECT _date_ FROM bookings WHERE _date_ LIKE ? AND free = 1",
+            (f"{date_str}%",)
+        )
+        results = cur.fetchall()
+        free_times = []
+        for row in results:
+            # row[0] — это строка с датой и временем (формата '%Y-%m-%d %H:%M')
+            try:
+                time_slot = datetime.strptime(row[0], "%Y-%m-%d %H:%M")
+                free_times.append(time_slot)
+            except Exception as e:
+                print(f"Ошибка конвертации времени: {row} ({e})")
+        return free_times
 
+    def del_old_free_time(self) -> dict:
+        try:
+            cur = self.conn.cursor()
+            now_str = datetime.now().strftime('%Y-%m-%d %H:%M')
+            cur.execute('''
+                DELETE FROM bookings
+                WHERE _date_ < ? AND confirmed = 0
+            ''', (now_str,))
+            self.conn.commit()
+            return {"message": f"Удалены старые неподтвержденные записи до {now_str}", "success": True}
+        except Exception as e:
+            return {"message": f"Ошибка при удалении старых записей: {e}", "success": False}
 
-
-
-# _data_ = Database('tables.db')
-# _data_.connect()
-# _data_.create_tables()
-# _data_.add_client('Анна', 1035)
-# _data_.add_service('Стрижка', 800)
-# _data_.add_booking(2, 1, '2024-03-15 14:00:00')
-# _data_.close_connection()

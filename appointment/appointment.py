@@ -13,16 +13,19 @@ class Service:
 
 
 class Master:
-    def __init__(self, master_id: int, name: str, specialties: List[str]):
-        self.master_id: int = master_id
+    def __init__(self, name: str, specialties: str = 'Парикмахер'):
+        self.master_id: Optional[int] = None
         self.name: str = name
-        self.specialties: List[str] = specialties
+        self.specialties: str = specialties
         self.schedule: Dict[Any, Any] = {}
 
     def __repr__(self):
         return self.name
 
-    def get_month_free_hours_dict(self, start=10, end=21, slot=90, year=None, month=None) -> None:
+    def set_id(self, master_id: int):
+        self.master_id = master_id
+
+    def get_month_free_hours_dict(self, start=10, end=21, slot=90, year=None, month=None) -> dict:
         now = datetime.now()
         year = year or now.year
         month = month or now.month
@@ -44,6 +47,8 @@ class Master:
                 self.schedule[key] = True
                 slot_time += timedelta(minutes=slot)
             day += timedelta(days=1)
+        dct = self.schedule
+        return dct
 
     def is_available(self, appointment_time: datetime) -> bool:
         dt_form = appointment_time.strftime("%Y-%m-%d %H:%M")
