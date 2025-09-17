@@ -26,7 +26,8 @@ class Database:
         CREATE TABLE IF NOT EXISTS clients(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT,
-        phone TEXT
+        phone TEXT,
+        telegram_id INTEGER
         ); 
         ''')
         cur.execute('''
@@ -85,6 +86,17 @@ class Database:
         except Exception as e:
             return {"message": f"Ошибка : {e}", "success": False}
 
+    def check_telegram_id(self, telegram_id: int) -> dict:
+        try:
+            cur = self.conn.cursor()
+            cur.execute('SELECT telegram_id FROM clients;')
+            list_telegram_id = cur.fetchall()
+            if (telegram_id,) in list_telegram_id:
+                return {"message": f"Клиент с telegram_id: {telegram_id} уже существует в базе.", "success": False}
+            return {"message": f"telegram_id: {telegram_id} нет в базе", "success": True}
+        except Exception as e:
+            return {"message": f"Ошибка : {e}", "success": False}
+
     def check_service(self, service_name: str) -> dict:
         try:
             cur = self.conn.cursor()
@@ -123,12 +135,17 @@ class Database:
             return masters
         return None
 
-    def add_client(self, name: str, phone: str) -> dict:
+    def add_client(self, name: str, phone: str, telegram_id: int) -> dict:
         try:
             if self.check_phone(phone)['success']:
                 cur = self.conn.cursor()
-                cur.execute('INSERT INTO clients(name, phone) VALUES (?, ?)', (name, phone))
+                cur.execute(
+                    'INSERT INTO clients(name, phone, telegram_id) VALUES (?, ?, ?)',
+                    (name, phone, telegram_id)
+                )
                 self.conn.commit()
+                client = Client(name, phone, telegram_id)
+                Hom.add_client(client)
                 return {"message": "Клиент добавлен", "success": True}
             return {"message": f"Клиент с номером {phone} уже существует!", "success": False}
         except Exception as e:
@@ -145,16 +162,18 @@ class Database:
             print(f'Ошибка при изменении имени :{e}')
             return {"message": f"Ошибка при изменении имени: {e}", "success": False}
 
-    def add_service(self, name, price) -> dict:
+    def add_service(self, service: Service) -> dict:
         try:
-            if self.check_service(name)['success']:
+            if self.check_service(service.name)['success']:
                 cur = self.conn.cursor()
-                cur.execute('INSERT INTO services(name, price) VALUES (?, ?)', (name, price))
+                cur.execute(
+                    'INSERT INTO services(name, price) VALUES (?, ?)',
+                    (service.name, service.price)
+                )
                 self.conn.commit()
-                services = Service(name, price)
-                Hom.services.append(services)
+                Hom.services.append(service)
                 return {"message": "Услуга добавлена", "success": True}
-            return {"message": f"Услуга {name} уже существует!", "success": False}
+            return {"message": f"Услуга {service.name} уже существует!", "success": False}
         except Exception as e:
             return {"message": f"Ошибка при добавлении услуги: {e}", "success": False}
 
@@ -218,16 +237,17 @@ class Database:
         except Exception as e:
             return {"message": f"Запись не добавлена, ошибка: {e}", "success": False}
 
-    def get_clients(self) -> List[Client]:
+    def get_clients(self) -> Optional[List[Client]]:
         clients = []
         cur = self.conn.cursor()
-        cur.execute('SELECT name, phone FROM clients;')
+        cur.execute('SELECT name, phone, telegram_id FROM clients;')
         list_clients = cur.fetchall()
         if list_clients:
             for client in list_clients:
                 lst = list(client)
-                clients.append(Client(lst[0], lst[1]))
+                clients.append(Client(lst[0], lst[1], lst[2]))
             return clients
+        return None
 
     def create_schedule(self, master_name: str) -> dict:
         try:
@@ -288,4 +308,3 @@ class Database:
             return {"message": f"Удалены старые неподтвержденные записи до {now_str}", "success": True}
         except Exception as e:
             return {"message": f"Ошибка при удалении старых записей: {e}", "success": False}
-

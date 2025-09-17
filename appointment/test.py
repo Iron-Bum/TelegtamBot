@@ -1,18 +1,13 @@
-from appointment.appointment import Service, Master, Appointment, Salon, Client
-from datetime import datetime
+import pandas as pd
+import datetime
+lst1 = (1,2,3)
+lst2 = [4,5,6]
+lst3 = (7,8,9)
+lst4 = [10,11,12]
 
-alla = Client('Алла', '+79265550077')
-
-haircut = Service('стрижка', '1500')
-coloring = Service('покраска', '4500')
-
-home_salon = Salon('На дому')
-home_salon.create_master(1,'Инна', ['haircut'])
-home_salon.add_client(alla)
-
-dt1 = datetime(2025, 6, 1, 10)
-dt5 = datetime(2025, 6, 1, 11, 30)
-# inna.book_time(dt1)
-# inna.cancel_time(dt5)
+a = pd.Series([lst1, lst2], ['B', 'V'], )
+b = pd.Series([lst3, lst4], ['B', 'V'])
+c = a+b
+print(c)
 
 
