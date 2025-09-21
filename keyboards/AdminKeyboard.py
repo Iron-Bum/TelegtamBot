@@ -3,14 +3,17 @@ from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMar
 AdminPanel = ReplyKeyboardMarkup(
     keyboard=[
         [
-            KeyboardButton(text='Добавить клиента'),
-            KeyboardButton(text='Добавить мастера')
+            KeyboardButton(text='Добавить клиента 👩🏻‍🦰'),
+            KeyboardButton(text='Добавить мастера 💇🏻‍♀️')
         ],
         [
-            KeyboardButton(text='Добавить (редактировать) услугу'),
-            KeyboardButton(text='Статистика'),
+            KeyboardButton(text='Добавить услугу 💰🫰🏻'),
+            KeyboardButton(text='Статистика 📊'),
+        ],
+        [
             KeyboardButton(text='Получить ID')
-        ]], resize_keyboard=True
+        ]
+    ], resize_keyboard=True
 )
 Choice = InlineKeyboardMarkup(
     inline_keyboard=[

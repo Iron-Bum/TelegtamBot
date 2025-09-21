@@ -24,6 +24,7 @@ class WeekKeyboardManager:
             KeyboardButton('⬅️ Предыдущая неделя'),
             KeyboardButton('Следующая неделя ➡️')
         )
+        keyboard.row(KeyboardButton('Отмена 🚫'))
         return keyboard
 
     def go_next_week(self):

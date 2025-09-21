@@ -18,6 +18,10 @@ class BookingState(StatesGroup):
     choosing_time = State()
 
 
+async def menu(message: types.Message):
+    await message.answer(text='', reply_markup=ClientPanel)
+
+
 async def start_choice_date(message: types.Message, state: FSMContext):
     manager_week = WeekKeyboardManager()
     await state.update_data(start_date=manager_week.start_date.isoformat())

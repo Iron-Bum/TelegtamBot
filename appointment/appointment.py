@@ -116,8 +116,6 @@ class Salon:
         self.appointments: List[Appointment] = []
         self.services: List[Service] = []
 
-    HAIRDRESER = 'Парикмахер'
-
     def add_master(self, master: Master) -> None:
         self.masters.append(master)
 
