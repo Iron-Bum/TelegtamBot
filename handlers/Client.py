@@ -78,3 +78,10 @@ async def day_navigation_handler(message: types.Message, state: FSMContext):
     except ValueError:
         await state.finish()
         await message.answer(text=f'Ошибка, попробуйте заново', reply_markup=ClientPanel)
+
+
+async def cancel_booking(message: types.Message):
+    client_id = db.clients.get_client_id(str(message.from_user.id))['values']
+    manager_kb = CancelKeyboard(db)
+    keyboard = manager_kb.create_time_keyboard(client_id)
+    await message.answer("Выберите дату время для отмены:", reply_markup=keyboard)

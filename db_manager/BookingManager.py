@@ -1,26 +1,28 @@
 import sqlite3 as sq
 from typing import List, Optional
 from datetime import datetime
-from appointment.appointment import Salon
 
 
 class BookingManager:
     def __init__(self, conn: sq.Connection):
         self.conn = conn
 
-    def add_booking(self, client_id: int, service_id: int, date: str) -> dict:
+    def add_booking(self, client_id: int, service_id: int, date: str, master_id: int = 1) -> dict:
         try:
             cur = self.conn.cursor()
-            cur.execute('SELECT _date_ FROM bookings WHERE _date_ = ? AND free = 0;', (date,))
+            cur.execute(
+                'SELECT _date_ FROM bookings WHERE _date_ = ? AND free = 0 AND master_id = ?;',
+                (date, master_id)
+            )
             if cur.fetchall():
                 return {"message": "Запись на это время уже существует.", "success": False}
             cur.execute(
                 '''
                 UPDATE bookings
-                SET client_id = ?, service_id = ?, free = ?
-                WHERE _date_ = ?
+                SET client_id = ?, service_id = ?, free = False
+                WHERE _date_ = ? AND master_id = ?
                 ''',
-                (client_id, service_id, False, date)
+                (client_id, service_id, date, master_id)
             )
             self.conn.commit()
             return {"message": "Запись добавлена.", "success": True}
@@ -55,3 +57,22 @@ class BookingManager:
             return {"message": f"Удалены старые неподтвержденные записи до {now_str}", "success": True}
         except Exception as e:
             return {"message": f"Ошибка при удалении старых записей: {e}", "success": False}
+
+    def get_client_booking(self, client_id: int) -> list:
+        cur = self.conn.cursor()
+        cur.execute('SELECT _date_ FROM bookings WHERE client_id = ?', (client_id,))
+        result = cur.fetchall()
+        tup = [i[0] for i in result]
+        return tup
+
+    def cancel_booking(self, date_time: str, master_id: int = 1):
+        cur = self.conn.cursor()
+        cur.execute(
+            '''
+            UPDATE bookings
+            SET client_id = NULL, service_id = NULL, free = TRUE
+            WHERE _date_ = ? AND master_id = ?
+            ''',
+            (date_time, master_id)
+        )
+        self.conn.commit()

@@ -53,13 +53,13 @@ class ClientService:
         except Exception as e:
             return {"message": f"Ошибка при изменении имени: {e}", "success": False}
 
-    def get_client_id(self, name_or_phone: str) -> dict:
+    def get_client_id(self, name_or_telega_id) -> dict:
         try:
             cur = self.conn.cursor()
-            if not name_or_phone.isdigit():
-                cur.execute('SELECT id FROM clients WHERE name = ?', (name_or_phone,))
+            if not name_or_telega_id.isdigit():
+                cur.execute('SELECT id FROM clients WHERE name = ?', (name_or_telega_id,))
             else:
-                cur.execute('SELECT id FROM clients WHERE phone = ?', (name_or_phone,))
+                cur.execute('SELECT id FROM clients WHERE telegram_id = ?', (name_or_telega_id,))
             client_id = cur.fetchone()
             if client_id:
                 return {"values": client_id[0], "message": "Получен ID клиента", "success": True}

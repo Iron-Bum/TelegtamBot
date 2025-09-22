@@ -36,7 +36,7 @@ class WeekKeyboardManager:
 
 class DayKeyboardManager:
     def __init__(self, db: DataBase):
-        self.db = db  # экземпляр вашего класса Database
+        self.db = db  # экземпляр класса Database
 
     def create_time_keyboard(self, date: datetime) -> Optional[ReplyKeyboardMarkup]:
         free_times = self.db.bookings.get_list_free_time(date)
@@ -55,3 +55,25 @@ class DayKeyboardManager:
                 keyboard.row(*row)
             return keyboard
         return None
+
+
+class CancelKeyboard:
+    def __init__(self, db: DataBase):
+        self.db = db
+
+    def create_time_keyboard(self, client_id):
+        list_time = self.db.bookings.get_client_booking(client_id)
+        keyboard = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+        buttons = [KeyboardButton(time) for time in list_time]
+        if buttons:
+            row = []
+            for i, button in enumerate(buttons, start=1):
+                row.append(button)
+                if i % 4 == 0:
+                    keyboard.row(*row)
+                    row = []
+            if row:
+                keyboard.row(*row)
+            return keyboard
+        keyboard.row(KeyboardButton('У вас нет записей. 🔙'))
+        return keyboard
