@@ -1,7 +1,7 @@
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 from typing import Optional
 from datetime import datetime, timedelta
-from Database_T_Bot import Database
+from DataBaseManager import DataBase
 
 
 class WeekKeyboardManager:
@@ -35,11 +35,11 @@ class WeekKeyboardManager:
 
 
 class DayKeyboardManager:
-    def __init__(self, db: Database):
+    def __init__(self, db: DataBase):
         self.db = db  # экземпляр вашего класса Database
 
     def create_time_keyboard(self, date: datetime) -> Optional[ReplyKeyboardMarkup]:
-        free_times = self.db.get_list_free_time(date)
+        free_times = self.db.bookings.get_list_free_time(date)
         keyboard = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
         buttons = [KeyboardButton(time.strftime('%H:%M')) for time in free_times]
         # Добавляем кнопки по 4 в строку

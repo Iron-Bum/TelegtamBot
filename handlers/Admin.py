@@ -5,16 +5,15 @@ import config
 from keyboards.AdminKeyboard import *
 import sys
 import os
-import Database_T_Bot
 from appointment.appointment import Master, Client, Service, Appointment
+from handlers.Start import db
 
 sys.path.append(os.path.join(os.getcwd(), '..'))
 
-db = Database_T_Bot.Database('tables.db')
-db.connect()
+
 db.create_tables()
-db.create_schedule('Ин')
-db.del_old_free_time()
+db.masters.create_schedule('Ин')
+db.bookings.del_old_free_time()
 
 
 class UserState(StatesGroup):
@@ -48,7 +47,7 @@ async def add_master(message: types.Message):
 
 
 async def send_master(message: types.Message, state: FSMContext):
-    db.add_master(Master(message.text))
+    db.masters.add_master(Master(message.text))
     await message.answer(f'{message.text} добавлен!')
     await state.finish()
 
@@ -59,7 +58,7 @@ async def add_user(message: types.Message):
 
 
 async def add_user_phone(message: types.Message, state: FSMContext):
-    if db.check_name(message.text)["success"]:
+    if db.clients.check_name(message.text)["success"]:
         await state.update_data(name=message.text)
         await message.answer(text='Введите номер телефона клиента')
         await UserState.phone.set()
@@ -72,7 +71,7 @@ async def send_user(message: types.Message, state: FSMContext):
     await state.update_data(phone=message.text)
     data = await state.get_data()
     username, user_phone = data['name'], data['phone']
-    if db.add_client(username, user_phone, message.from_user.id)["success"]:
+    if db.clients.add_client(username, user_phone, message.from_user.id)["success"]:
         await message.answer(
             text=f'Клиент {username} с номером телефона {user_phone} добавлен!', parse_mode='HTML'
         )
@@ -91,7 +90,7 @@ async def add_service(message: types.Message):
 
 async def add_service_price(message: types.Message, state: FSMContext):
     await state.update_data(service=message.text)
-    if db.check_service(message.text)["success"]:
+    if db.services.check_service(message.text)["success"]:
         await message.answer(text='Введите цену услуги')
         await ServiceState.cost.set()
     else:
@@ -115,12 +114,12 @@ async def send_service(message: types.Message, state: FSMContext):
         await state.update_data(price=message.text)
         data = await state.get_data()
         service_name, price = data['service'], int(data['price'])
-        if db.check_service(service_name)["success"]:
+        if db.services.check_service(service_name)["success"]:
             service = Service(service_name, price)
-            db.add_service(service)
+            db.services.add_service(service)
             await message.answer('Услуга добавлена')
         else:
-            db.upd_price(service_name, price)
+            db.services.upd_price(service_name, price)
             await message.answer('Цена изменена')
         await state.finish()
     except ValueError:
@@ -134,7 +133,7 @@ async def get_client_id_step_1(message: types.Message):
 
 
 async def get_client_id_step_2(message: types.Message, state: FSMContext):
-    client_id = db.get_client_id(message.text)
+    client_id = db.clients.get_client_id(message.text)
     if 'values' in client_id:
         await message.answer(f"ID клиента : {client_id['values']}")
         await state.finish()

@@ -5,11 +5,9 @@ from keyboards.ClientKeyboard import *
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from keyboards.KeyboardManager import *
-from Database_T_Bot import Database
+from handlers.Start import db
 sys.path.append(os.path.join(os.getcwd(), '..'))
 
-db = Database('tables.db')
-db.connect()
 manager_dey = DayKeyboardManager(db)
 
 
@@ -19,7 +17,7 @@ class BookingState(StatesGroup):
 
 
 async def menu(message: types.Message):
-    await message.answer(text='', reply_markup=ClientPanel)
+    await message.answer(text='Меню', reply_markup=ClientPanel)
 
 
 async def start_choice_date(message: types.Message, state: FSMContext):
@@ -41,6 +39,10 @@ async def week_navigation_handler(message: types.Message, state: FSMContext):
         manager_week.go_next_week()
     elif message.text == '⬅️ Предыдущая неделя':
         manager_week.go_prev_week()
+    elif message.text == 'Отмена 🚫':
+        await state.finish()
+        await message.answer('Меню', reply_markup=ClientPanel)
+        return
     else:
         try:
             # Обработка выбора конкретной даты
@@ -71,7 +73,7 @@ async def day_navigation_handler(message: types.Message, state: FSMContext):
         chosen_datatime_str = f"{day.strftime('%Y-%m-%d')} {message.text}"
         chosen_datatime = datetime.strptime(chosen_datatime_str, "%Y-%m-%d %H:%M")
         await message.answer(f'Запись на {chosen_datatime} зарезервирована', reply_markup=ClientPanel)
-        db.add_booking(1, 2, chosen_datatime_str)
+        db.bookings.add_booking(1, 2, chosen_datatime_str)
         await state.finish()
     except ValueError:
         await state.finish()

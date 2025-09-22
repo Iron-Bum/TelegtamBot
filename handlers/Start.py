@@ -4,12 +4,12 @@ from aiogram import types
 from keyboards.StartKeyboard import *
 from keyboards.ClientKeyboard import *
 from aiogram.dispatcher.filters.state import State, StatesGroup
-import Database_T_Bot
+from DataBaseManager import DataBase
 from aiogram.dispatcher import FSMContext
 sys.path.append(os.path.join(os.getcwd(), '..'))
 
 
-db = Database_T_Bot.Database('tables.db')
+db = DataBase('database/tables.db')
 db.connect()
 
 
@@ -25,7 +25,7 @@ async def hi(message: types.Message, state: FSMContext):
 
 async def registration_step1(message: types.Message):
     telegram_id = message.from_user.id
-    if db.check_telegram_id(telegram_id)['success']:
+    if db.clients.check_telegram_id(telegram_id)['success']:
         await message.answer('Напишите ваше имя')
         await Registration.name.set()
     else:
@@ -46,6 +46,6 @@ async def registration_step3(message: types.Message, state: FSMContext):
     phone_number = message.contact.phone_number
     data = await state.get_data()
     name = data['name']
-    db.add_client(name, phone_number, message.from_user.id)
+    db.clients.add_client(name, phone_number, message.from_user.id)
     await message.answer('Вы зарегестрированы!', reply_markup=ClientPanel)
     await state.finish()
