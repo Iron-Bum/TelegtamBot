@@ -12,7 +12,7 @@ api = config.API
 bot = Bot(token=api)
 dp = Dispatcher(bot, storage=MemoryStorage())
 
-dp.message_handler(Text(equals=['Админ']))(Admin.start)
+dp.message_handler(commands=['Админ'])(Admin.start)
 dp.message_handler(Text(equals=['Вход/Регистрация']))(Start.registration_step1)
 dp.callback_query_handler(text=['choice_yes', 'choice_nou'], state=Admin.ServiceState.name)(Admin.hendl_choice)
 dp.message_handler(Text(equals=['Прервать регистрацию 🚫']), state=Start.Registration.phone)(Start.hi)
@@ -21,7 +21,7 @@ dp.message_handler(Text(equals=['Добавить услугу 💰🫰🏻']))(
 dp.message_handler(Text(equals=['Получить ID']))(Admin.get_client_id_step_1)
 dp.message_handler(Text(equals=['Добавить мастера 💇🏻‍♀️']))(Admin.add_master)
 dp.message_handler(Text(equals=['Запись ✍🏻📅']))(Client.start_choice_date)
-dp.message_handler(Text(equals=['Отмена 🚫']))(Client.menu)
+dp.message_handler(Text(equals=['Отмена 🚫', 'У вас нет записей. 🔙','Назад 🔙']))(Client.menu)
 dp.message_handler(Text(equals=['Отменить запись 🙅']))(Client.cancel_booking)
 dp.message_handler(state=Start.Registration.name)(Start.registration_step2)
 dp.message_handler(state=Start.Registration.phone, content_types=types.ContentType.CONTACT)(Start.registration_step3)

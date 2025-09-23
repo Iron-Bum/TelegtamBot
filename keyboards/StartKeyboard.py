@@ -8,7 +8,7 @@ StartPanel = ReplyKeyboardMarkup(
         ],
         [
             KeyboardButton(text='Цены', callback_data='price'),
-            KeyboardButton(text='Админ')
+            KeyboardButton(text='/Админ')
         ]
     ], resize_keyboard=True
 )

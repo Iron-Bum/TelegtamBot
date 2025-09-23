@@ -53,7 +53,7 @@ class ClientService:
         except Exception as e:
             return {"message": f"Ошибка при изменении имени: {e}", "success": False}
 
-    def get_client_id(self, name_or_telega_id) -> dict:
+    def get_client_id(self, name_or_telega_id: str) -> dict:
         try:
             cur = self.conn.cursor()
             if not name_or_telega_id.isdigit():

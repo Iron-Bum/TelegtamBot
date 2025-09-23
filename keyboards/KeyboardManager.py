@@ -69,11 +69,12 @@ class CancelKeyboard:
             row = []
             for i, button in enumerate(buttons, start=1):
                 row.append(button)
-                if i % 4 == 0:
+                if i % 2 == 0:
                     keyboard.row(*row)
                     row = []
             if row:
                 keyboard.row(*row)
+            keyboard.row(KeyboardButton('Назад 🔙'))
             return keyboard
         keyboard.row(KeyboardButton('У вас нет записей. 🔙'))
         return keyboard

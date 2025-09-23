@@ -29,11 +29,11 @@ class Master:
     def set_id(self, master_id: int):
         self.master_id = master_id
 
-    def get_month_free_hours_dict(self, start=10, end=21, slot=90, year=None, month=None) -> dict:
+    def get_month_free_hours_dict(self, start=10, end=21, slot=90, year=None, month=None, weekend=None) -> dict:
         now = datetime.now()
         year = year or now.year
         month = month or now.month
-
+        weekend = weekend or []
         # Находим первый день месяца
         first_day = datetime(year, month, 1)
         # Находим первый день следующего месяца
@@ -41,9 +41,11 @@ class Master:
             next_month = datetime(year + 1, 1, 1)
         else:
             next_month = datetime(year, month + 1, 1)
-
         day = first_day
         while day < next_month:
+            if day.day in weekend:
+                day += timedelta(days=1)
+                continue
             slot_time = day.replace(hour=start, minute=0, second=0, microsecond=0)
             end_time = day.replace(hour=end, minute=0, second=0, microsecond=0)
             while slot_time < end_time:

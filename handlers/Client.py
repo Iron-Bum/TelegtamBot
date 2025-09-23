@@ -73,7 +73,8 @@ async def day_navigation_handler(message: types.Message, state: FSMContext):
         chosen_datatime_str = f"{day.strftime('%Y-%m-%d')} {message.text}"
         chosen_datatime = datetime.strptime(chosen_datatime_str, "%Y-%m-%d %H:%M")
         await message.answer(f'Запись на {chosen_datatime} зарезервирована', reply_markup=ClientPanel)
-        db.bookings.add_booking(1, 2, chosen_datatime_str)
+        client_id = db.clients.get_client_id(str(message.from_user.id))
+        db.bookings.add_booking(client_id['values'], 2, chosen_datatime_str)
         await state.finish()
     except ValueError:
         await state.finish()
